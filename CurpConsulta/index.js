@@ -1,6 +1,6 @@
 const {v1: uuidv1 } = require('uuid'),
-moment = require("moment"),
-DB = require("../Shared/Utils/DB"),
+moment   = require("moment"),
+DB       = require("../Shared/Utils/DB"),
 scrapper = require("../Shared/Service/scrapper");
 
 
@@ -15,7 +15,7 @@ module.exports = async function (context, req) {
     let response = { status: "error", message: "", data: null, code: 0 };
 
     try{
-        
+
         idLog = await SaveRequest(strBody, uuid, request_time);
 
         response = await errorRequest(reqJson, response);
@@ -40,8 +40,12 @@ module.exports = async function (context, req) {
         if(idLog !== "") await SaveResponse(idLog, response, response.status, request_time)
     }    
     
+    let status = 200;
+
+    if(response.code == 120) status = 406;
+
     context.res = {
-        // status: 200, /* Defaults to 200 */        
+         status: status, /* Defaults to 200 */        
         headers: {
             "content-type": "application/json"
         },
@@ -79,7 +83,13 @@ async function errorRequest(req, response){
     if(!req) response.message = "Error en request";
     else if(!req.tipo_busqueda)  response.message = "Parámetro tipo_busqueda requerido";
     else if(req.tipo_busqueda != "curp" && req.tipo_busqueda != "datos") response.message = "Parámetro tipo_busqueda valor invalido";
-    else if(req.tipo_busqueda == "curp" && !req.curp) response.message = "Parámetro curp requerido";
+    else if(req.tipo_busqueda == "curp" && !req.curp){
+        response.message = "El campo curp no cumple con el formato o contiene caracteres inválidos.";
+        response.data = {};
+        response.data.curpdata = {};
+        response.data.curpdata.codigo = "05"; 
+        response.data.curpdata.mensaje = "El campo curp no cumple con el formato o contiene caracteres inválidos."; 
+    }
     else if(req.tipo_busqueda == "datos" && !req.clave_entidad) response.message = "Parámetro clave_entidad requerido";
     else if(req.tipo_busqueda == "datos" && !req.dia_nacimiento) response.message = "Parámetro dia_nacimiento requerido";
     else if(req.tipo_busqueda == "datos" && !req.mes_nacimiento) response.message = "Parámetro mes_nacimiento requerido";

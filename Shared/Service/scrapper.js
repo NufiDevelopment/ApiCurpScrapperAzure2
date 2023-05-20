@@ -273,7 +273,12 @@ async function ScrappCurpbyData(clave_entidad, dia_nacimiento, mes_nacimiento, n
                 if(typeof jsonResponse == "object" &&  jsonResponse.codigo === "01" )
                 {
                     jsonResponseFinal["files"] = [];
-                    jsonResponseFinal.files[0] = await GetFile(page);
+
+                    let fileData = await GetFile(page);
+                    if(fileData === "") throw exception("PDF no pudo ser obtenido");
+
+                    
+                    jsonResponseFinal.files[0] = fileData;
 
                     responseFinal.data = jsonResponseFinal;
                     responseFinal.status = "success";
@@ -447,26 +452,9 @@ async function handleResponse(response) {
 async function GetFile(page){
 
     try{
-
-        await wait(2 * 1000);
-
-        
-        const btnDownload = await page.$('#download');
-        await btnDownload.evaluate( btnDownload => btnDownload.click() );
-
-        await wait(2 * 1000);
-
-        // let downloadResponse = await page.waitForResponse(response =>
-        //     response.url().includes(urlDescarga)  && response.status() === 200
-        // );
-
-
         let pdfCurp = "";
-        
-        if(downloadResponse !== null) {
-            pdfCurp = await downloadResponse.text();//.replace("", "\n");
-            pdfCurp = pdfCurp.replace(/\\n/g, "");
-        }
+
+        pdfCurp =(downloadResponse !== null) ? await GetFileFromResponse(downloadResponse) : await DownLoadFile(page);
 
         return pdfCurp;
     }   
@@ -475,4 +463,36 @@ async function GetFile(page){
         console.log(err);
         return "";
     }
+}
+
+async function DownLoadFile(page){
+
+    let pdfCurp = "";
+
+    await wait(2 * 1000);
+        
+    const btnDownload = await page.$('#download');
+    await btnDownload.evaluate( btnDownload => btnDownload.click() );
+
+    await wait(2 * 1000);
+
+    if(downloadResponse !== null) {
+        pdfCurp = await GetFileFromResponse(downloadResponse);
+    }
+    else{
+        throw exception("PDF no pudo ser obtenido");
+    }
+
+    return pdfCurp;
+} 
+
+async function GetFileFromResponse(resp){
+
+    let pdfCurp = "";
+    pdfCurp = await resp.text();
+    // pdfCurp = pdfCurp.replace(/\\n/g, "");
+    pdfCurp = pdfCurp.replace(/[\n\r]/g,'');
+
+
+    return pdfCurp;
 }
