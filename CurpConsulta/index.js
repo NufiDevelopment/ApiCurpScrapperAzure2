@@ -24,7 +24,7 @@ module.exports = async function (context, req) {
 
         if(response.code === 0 && reqJson.tipo_busqueda == "curp") body = await scrapper.ObtenerCurp(reqJson.curp, response);
 
-        if(response.code === 0 && reqJson.tipo_busqueda == "datos") body = await scrapper.ObtenerCurpByData(reqJson.clave_entidad, reqJson.dia_nacimiento, reqJson.mes_nacimiento,
+        if(response.code === 0 && reqJson.tipo_busqueda == "datos") body = await scrapper.ScrappCurpbyData(reqJson.clave_entidad, reqJson.dia_nacimiento, reqJson.mes_nacimiento,
             reqJson.nombres, reqJson.primer_apellido, reqJson.segundo_apellido, reqJson.anio_nacimiento, reqJson.sexo, response);
 
     }
@@ -81,7 +81,13 @@ function SaveResponse(idLog, response, status, reqTime){
 async function errorRequest(req, response){
 
     if(!req) response.message = "Error en request";
-    else if(!req.tipo_busqueda)  response.message = "Parámetro tipo_busqueda requerido";
+    else if(!req.tipo_busqueda)  {
+        response.message = "El campo Tipo es requerido.";
+        response.data = {};
+        response.data.curpdata = {};
+        response.data.curpdata.codigo = "04"; 
+        response.data.curpdata.mensaje = "El campo Tipo es requerido."; 
+    }
     else if(req.tipo_busqueda != "curp" && req.tipo_busqueda != "datos") response.message = "Parámetro tipo_busqueda valor invalido";
     else if(req.tipo_busqueda == "curp" && !req.curp){
         response.message = "El campo curp no cumple con el formato o contiene caracteres inválidos.";

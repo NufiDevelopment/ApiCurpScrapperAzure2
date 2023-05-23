@@ -39,14 +39,14 @@ let downloadResponse = null;
 module.exports = {
     ObtenerCurp: async function(curp, response)
     {
-        return await ScrappCurpbyCurp(curp, response);
+        return await ObtenerCurpByCurp(curp, response);
     },
     ObtenerCurpByData: async function(clave_entidad, dia_nacimiento, mes_nacimiento, nombres, primer_apellido, segundo_apellido, anio_nacimiento, sexo, response){
         return await ScrappCurpbyData(clave_entidad, dia_nacimiento, mes_nacimiento, nombres, primer_apellido, segundo_apellido, anio_nacimiento, sexo, response);
     }
 }
 
-async function ScrappCurpbyCurp(curp, response){
+async function ObtenerCurpByCurp(curp, response){
 
     let responseFinal = response;
     let errorInfo = "";
@@ -111,13 +111,16 @@ async function ScrappCurpbyCurp(curp, response){
 
                 if(responseData === "") continue;
 
-                
-                await page.evaluate(val => document.querySelector('#curpinput').value = val, curp);            
+                               
                 await page.evaluate(val => document.querySelector('#g-recaptcha-response').value = val, responseData);
 
                 await page.setRequestInterception(true);                
                 page.on('request', handleRequest);
                 page.on('response', handleResponse);
+
+
+                await page.evaluate(val => document.querySelector('#curpinput').value = val, curp);
+
 
                 const btnSearch = await page.$('#searchButton');
                 await btnSearch.evaluate( btnSearch => btnSearch.click() );
@@ -146,9 +149,17 @@ async function ScrappCurpbyCurp(curp, response){
 
                     return responseFinal;
                 }
+                else if(typeof jsonResponse == "object" &&  jsonResponse.codigo === "180001" ){
+                    responseFinal.data =  jsonResponseFinal;
+                    responseFinal.message = jsonResponseFinal.curpdata.mensaje;
+                    responseFinal.code =  120;
+                    responseFinal.status = "error";
+
+                    return responseFinal;
+                }
                 else{
                     responseFinal.data =  jsonResponseFinal;
-                    responseFinal.message =  "error durante procesamiento";
+                    responseFinal.message =  "error durante procesamiento"; 
                     responseFinal.code =  120;
                     responseFinal.status = "error";
 
@@ -170,7 +181,7 @@ async function ScrappCurpbyCurp(curp, response){
     }
     catch(err){
 
-        responseFinal.data = {error : JSON.stringify(errData) };
+        responseFinal.data = {error : JSON.stringify(err) };
         responseFinal.message =  "error durante procesamiento";
         responseFinal.code =  141;
         responseFinal.status = "error";        
@@ -287,6 +298,14 @@ async function ScrappCurpbyData(clave_entidad, dia_nacimiento, mes_nacimiento, n
 
                     return responseFinal;
                 }
+                else if(typeof jsonResponse == "object" &&  jsonResponse.codigo === "180001" ){
+                    responseFinal.data =  jsonResponseFinal;
+                    responseFinal.message = jsonResponseFinal.curpdata.mensaje;
+                    responseFinal.code =  120;
+                    responseFinal.status = "error";
+
+                    return responseFinal;
+                }                
                 else{
                     responseFinal.data =  jsonResponseFinal;
                     responseFinal.message =  "error durante procesamiento";
