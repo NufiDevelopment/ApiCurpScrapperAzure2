@@ -39,14 +39,14 @@ let downloadResponse = null;
 module.exports = {
     ObtenerCurp: async function(curp, response)
     {
-        return await ObtenerCurpByCurp(curp, response);
+        return await ScrappCurpbyCurp(curp, response);
     },
     ObtenerCurpByData: async function(clave_entidad, dia_nacimiento, mes_nacimiento, nombres, primer_apellido, segundo_apellido, anio_nacimiento, sexo, response){
         return await ScrappCurpbyData(clave_entidad, dia_nacimiento, mes_nacimiento, nombres, primer_apellido, segundo_apellido, anio_nacimiento, sexo, response);
     }
 }
 
-async function ObtenerCurpByCurp(curp, response){
+async function ScrappCurpbyCurp(curp, response){
 
     let responseFinal = response;
     let errorInfo = "";
@@ -58,11 +58,7 @@ async function ObtenerCurpByCurp(curp, response){
 
             puppeteer.use(StealthPlugin());
 
-            errData += "\nUse StealthPlugin";
-
             let browser = await StartBrowser();
-
-            errData += "\nUse startBrowser";
 
             const userAgent = new UserAgent({deviceCategory: "desktop"});
             
@@ -71,11 +67,7 @@ async function ObtenerCurpByCurp(curp, response){
 
                 let page = await browser.newPage();
 
-                errData += "\nUse newPage";
-
                 await page.setUserAgent(userAgent.random().toString());
-
-                errData += "\nUse setUserAgent";
 
                 if(PROXY_ACTIVE){
                     await page.authenticate({
@@ -206,14 +198,14 @@ async function ScrappCurpbyData(clave_entidad, dia_nacimiento, mes_nacimiento, n
 
             let browser = await StartBrowser();
 
-            const userAgent = new UserAgent({deviceCategory: "desktop"});
-            
-            await page.setUserAgent(userAgent.random().toString());
+            const userAgent = new UserAgent({deviceCategory: "desktop"});            
 
             try{
 
 
                 let page = await browser.newPage();
+
+                await page.setUserAgent(userAgent.random().toString());
 
                 if(PROXY_ACTIVE){
                     await page.authenticate({
@@ -266,7 +258,7 @@ async function ScrappCurpbyData(clave_entidad, dia_nacimiento, mes_nacimiento, n
                 await page.setRequestInterception(true);
                 
                 page.on('request', handleRequest);
-                page.on('response', handleRequest);
+                page.on('response', handleResponse);
 
                 const btnSearch = await page.$('#searchButton');
                 await btnSearch.evaluate( btnSearch => btnSearch.click() );
