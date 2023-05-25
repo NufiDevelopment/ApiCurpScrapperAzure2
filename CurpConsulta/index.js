@@ -80,6 +80,19 @@ function SaveResponse(idLog, response, status, reqTime){
 
 async function errorRequest(req, response){
 
+    var responseErrorGeneral = {
+        status: "error",
+        message: "Estimado/a usuario/a: Los datos ingresados no son correctos. Verifica e int\éntalo de nuevo. En caso de que persista la misma respuesta, favor de enviar un correo electr\ónico a tramitecurp@segob.gob.mx, describiendo claramente la situaci\ón a atender y anexando copia de tu acta de nacimiento y de una identificaci\ón oficial. Gracias.",
+        data: {
+            gdata: "",
+            curpdata: {
+                codigo: "180001",
+                mensaje: "Estimado/a usuario/a: Los datos ingresados no son correctos. Verifica e int\éntalo de nuevo. En caso de que persista la misma respuesta, favor de enviar un correo electr\ónico a tramitecurp@segob.gob.mx, describiendo claramente la situaci\ón a atender y anexando copia de tu acta de nacimiento y de una identificaci\ón oficial. Gracias."
+            }
+        },
+        code: 120
+    };
+
     if(!req) response.message = "Error en request";
     else if(!req.tipo_busqueda)  {
         response.message = "El campo Tipo es requerido.";
@@ -96,14 +109,14 @@ async function errorRequest(req, response){
         response.data.curpdata.codigo = "05"; 
         response.data.curpdata.mensaje = "El campo curp no cumple con el formato o contiene caracteres inválidos."; 
     }
-    else if(req.tipo_busqueda == "datos" && !req.clave_entidad) response.message = "Parámetro clave_entidad requerido";
-    else if(req.tipo_busqueda == "datos" && !req.dia_nacimiento) response.message = "Parámetro dia_nacimiento requerido";
-    else if(req.tipo_busqueda == "datos" && !req.mes_nacimiento) response.message = "Parámetro mes_nacimiento requerido";
-    else if(req.tipo_busqueda == "datos" && !req.nombres) response.message = "Parámetro nombres requerido";
-    else if(req.tipo_busqueda == "datos" && !req.primer_apellido) response.message = "Parámetro primer_apellido requerido";
-    else if(req.tipo_busqueda == "datos" && !req.segundo_apellido) response.message = "Parámetro segundo_apellido requerido";
-    else if(req.tipo_busqueda == "datos" && !req.anio_nacimiento) response.message = "Parámetro anio_nacimiento requerido";
-    else if(req.tipo_busqueda == "datos" && !req.sexo) response.message = "Parámetro sexo requerido";
+    else if(req.tipo_busqueda == "datos" && !req.clave_entidad) response = responseErrorGeneral;
+    else if(req.tipo_busqueda == "datos" && !req.dia_nacimiento) response = responseErrorGeneral;
+    else if(req.tipo_busqueda == "datos" && !req.mes_nacimiento) response = responseErrorGeneral;
+    else if(req.tipo_busqueda == "datos" && !req.nombres) response = responseErrorGeneral;
+    else if(req.tipo_busqueda == "datos" && !req.primer_apellido) response = responseErrorGeneral;
+    else if(req.tipo_busqueda == "datos" && !req.segundo_apellido) response = responseErrorGeneral;
+    else if(req.tipo_busqueda == "datos" && !req.anio_nacimiento) response = responseErrorGeneral;
+    else if(req.tipo_busqueda == "datos" && !req.sexo) response = responseErrorGeneral;
 
     if(response.message !== "") response.code = 120;
 
