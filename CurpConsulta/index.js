@@ -3,6 +3,9 @@ moment   = require("moment"),
 DB       = require("../Shared/Utils/DB"),
 scrapper = require("../Shared/Service/scrapper");
 
+const estados = ["AS", "BC", "BS", "CC", "CL", "CM", "CS", "CH", "DF", "DG", "GT", "GR", "HG", "JC", "MC", "MN", "MS", "MT", "NL", "OC", "PL", "QT", "QR", "SP", "SL", "SR", "TC", "TS", "TL", "VZ", "YN", "ZS", "NE"];
+
+const generos = ["M", "H", "X"];
 
 module.exports = async function (context, req) {
 
@@ -116,9 +119,43 @@ async function errorRequest(req, response){
     else if(req.tipo_busqueda == "datos" && !req.primer_apellido) response = responseErrorGeneral;
     else if(req.tipo_busqueda == "datos" && !req.segundo_apellido) response = responseErrorGeneral;
     else if(req.tipo_busqueda == "datos" && !req.anio_nacimiento) response = responseErrorGeneral;
+    else if(req.tipo_busqueda == "datos" && !req.anio_nacimiento) response = responseErrorGeneral;
     else if(req.tipo_busqueda == "datos" && !req.sexo) response = responseErrorGeneral;
+    else if(req.tipo_busqueda == "datos" && areFieldsEmpty(req))response = responseErrorGeneral;
+    else if(req.tipo_busqueda == "datos" && !isDateValid(req.anio_nacimiento, req.mes_nacimiento, req.dia_nacimiento))response = responseErrorGeneral;
+    else if(req.tipo_busqueda == "datos" && !isStateValid(req.clave_entidad))response = responseErrorGeneral;
+    else if(req.tipo_busqueda == "datos" && !isGeneroValid(req.sexo))response = responseErrorGeneral;
+    else if(req.tipo_busqueda == "datos" && !isYearValid(req.anio_nacimiento))response = responseErrorGeneral;
 
     if(response.message !== "") response.code = 120;
 
     return response;
+}
+function areFieldsEmpty(req){
+    return (req.clave_entidad == "" 
+            || req.dia_nacimiento =="" 
+            || req.nombres =="" 
+            || req.primer_apellido =="" 
+            || req.segundo_apellido =="" 
+            || req.anio_nacimiento ==""
+            || req.sexo == ""
+            );
+}
+function isYearValid(year){
+    console.log(moment().year());
+    console.log(parseInt(year));
+    return  isNumeric(year) && parseInt(year) >= 1890 && parseInt(year) <= moment().year();
+}
+function isNumeric(str) {
+    if (typeof str != "string") return false 
+    return !isNaN(str);
+}
+function isDateValid(year, month, day){
+    return moment(`${year}-${month}-${day}`, "YYYY-MM-DD", true).isValid();
+}
+function isStateValid(state){
+        return estados.includes(state);
+}
+function isGeneroValid(sexo){
+    return generos.includes(sexo);
 }
