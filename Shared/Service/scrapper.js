@@ -218,7 +218,7 @@ async function ScrappCurpbyData(clave_entidad, dia_nacimiento, mes_nacimiento, n
                 let bodyHTML = await page.evaluate(() => document.body.innerHTML);
                 let $ = cheerio.load(bodyHTML);
 
-                await page.waitForSelector('#ember313 > div > div > iframe', 3000);
+                await page.waitForSelector('#ember318 > div > div > iframe', 3000);
                 const elementHandle = await page.$('.g-recaptcha > div > div > iframe')
                 const frame = await elementHandle.contentFrame()                
 
