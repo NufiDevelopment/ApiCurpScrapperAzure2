@@ -31,8 +31,8 @@ const myConst = {
     BCN: "Baja no afectando a curp"
     };
           
-let finalResponse = null;
-let downloadResponse = null;
+// let finalResponse = null;
+// let downloadResponse = null;
 
 
 
@@ -108,7 +108,7 @@ async function ScrappCurpbyCurp(curp, response){
 
                 await page.setRequestInterception(true);                
                 page.on('request', handleRequest);
-                page.on('response', handleResponse);
+                // page.on('response', handleResponse);
 
 
                 await page.evaluate(val => document.querySelector('#curpinput').value = val, curp);
@@ -117,14 +117,14 @@ async function ScrappCurpbyCurp(curp, response){
                 const btnSearch = await page.$('#searchButton');
                 await btnSearch.evaluate( btnSearch => btnSearch.click() );
 
-                await wait(1 * 1000);
+                // await wait(1 * 1000);
                 
 
-                // finalResponse = await page.waitForResponse(response =>
-                //     response.url() === urlConsulta && response.status() === 200
-                // );
+                let finalResponseLocal = await page.waitForResponse(response =>
+                    response.url() === urlConsulta && response.status() === 200
+                );
 
-                jsonResponse = await finalResponse.json();
+                jsonResponse = await finalResponseLocal.json();
 
                 jsonResponseFinal = formatJsonResponse(jsonResponse, responseData);
                 
@@ -258,18 +258,18 @@ async function ScrappCurpbyData(clave_entidad, dia_nacimiento, mes_nacimiento, n
                 await page.setRequestInterception(true);
                 
                 page.on('request', handleRequest);
-                page.on('response', handleResponse);
+                // page.on('response', handleResponse);
 
                 const btnSearch = await page.$('#searchButton');
                 await btnSearch.evaluate( btnSearch => btnSearch.click() );
 
-                await wait(1 * 1000);
+                // await wait(1 * 1000);
 
-                // finalResponse = await page.waitForResponse(response =>
-                //     response.url() === urlConsulta && response.status() === 200
-                // );
+                let finalResponseLocal = await page.waitForResponse(response =>
+                    response.url() === urlConsulta && response.status() === 200
+                );
 
-                jsonResponse = await finalResponse.json();
+                jsonResponse = await finalResponseLocal.json();
 
                 jsonResponseFinal = formatJsonResponse(jsonResponse, responseData);
 
@@ -278,6 +278,7 @@ async function ScrappCurpbyData(clave_entidad, dia_nacimiento, mes_nacimiento, n
                     jsonResponseFinal["files"] = [];
 
                     let fileData = await GetFile(page);
+
                     if(fileData === "") throw exception("PDF no pudo ser obtenido");
 
                     
@@ -449,11 +450,11 @@ async function handleRequest(request) {
 async function handleResponse(response) {
     try {
         console.log(response.url());
-        if(response.url() === urlConsulta && response.status() === 200)
-            finalResponse = response;
+        // if(response.url() === urlConsulta && response.status() === 200)
+        //     finalResponse = response;
 
-        if(response.url().includes(urlDescarga)  && response.status() === 200)
-            downloadResponse = response;
+        // if(response.url().includes(urlDescarga)  && response.status() === 200)
+        //     downloadResponse = response;
         
     } catch (err) {
       console.log(err);
@@ -465,7 +466,8 @@ async function GetFile(page){
     try{
         let pdfCurp = "";
 
-        pdfCurp =(downloadResponse !== null) ? await GetFileFromResponse(downloadResponse) : await DownLoadFile(page);
+        // pdfCurp =(downloadResponse !== null) ? await GetFileFromResponse(downloadResponse) : await DownLoadFile(page);
+        pdfCurp = await DownLoadFile(page);
 
         return pdfCurp;
     }   
@@ -485,7 +487,11 @@ async function DownLoadFile(page){
     const btnDownload = await page.$('#download');
     await btnDownload.evaluate( btnDownload => btnDownload.click() );
 
-    await wait(2 * 1000);
+    let downloadResponse = await page.waitForResponse(response =>
+        response.url().includes(urlDescarga) && response.status() === 200
+    );
+
+    // await wait(2 * 1000);
 
     if(downloadResponse !== null) {
         pdfCurp = await GetFileFromResponse(downloadResponse);
