@@ -37,16 +37,16 @@ const myConst = {
 
 
 module.exports = {
-    ObtenerCurp: async function(curp, response)
+    ObtenerCurp: async function(curp, response, uuid)
     {
-        return await ScrappCurpbyCurp(curp, response);
+        return await ScrappCurpbyCurp(curp, response, uuid);
     },
-    ObtenerCurpByData: async function(clave_entidad, dia_nacimiento, mes_nacimiento, nombres, primer_apellido, segundo_apellido, anio_nacimiento, sexo, response){
-        return await ScrappCurpbyData(clave_entidad, dia_nacimiento, mes_nacimiento, nombres, primer_apellido, segundo_apellido, anio_nacimiento, sexo, response);
+    ObtenerCurpByData: async function(clave_entidad, dia_nacimiento, mes_nacimiento, nombres, primer_apellido, segundo_apellido, anio_nacimiento, sexo, response, uuid){
+        return await ScrappCurpbyData(clave_entidad, dia_nacimiento, mes_nacimiento, nombres, primer_apellido, segundo_apellido, anio_nacimiento, sexo, response, uuid);
     }
 }
 
-async function ScrappCurpbyCurp(curp, response){
+async function ScrappCurpbyCurp(curp, response, uuid){
 
     let responseFinal = response;
     let errorInfo = "";
@@ -88,7 +88,7 @@ async function ScrappCurpbyCurp(curp, response){
                 const elementHandle = await page.$('.g-recaptcha > div > div > iframe')
                 const frame = await elementHandle.contentFrame()                
 
-                await wait(2 * 1000);
+                // await wait(2 * 1000);
 
                 let responseData = "";
 
@@ -96,7 +96,7 @@ async function ScrappCurpbyCurp(curp, response){
 
                 await ac.solveRecaptchaV2Proxyless(urlTarget, gKEY)
                     .then(gresponse => {
-                    console.log('g-response: '+gresponse);
+                    // console.log('g-response: '+gresponse);
                     responseData = gresponse;
                 })
                 .catch(error => console.log('test received error '+error));
@@ -124,15 +124,19 @@ async function ScrappCurpbyCurp(curp, response){
                     response.url() === urlConsulta && response.status() === 200
                 );
 
-                jsonResponse = await finalResponseLocal.json();
+                
+                let jsonResponse = await finalResponseLocal.json();
 
-                jsonResponseFinal = formatJsonResponse(jsonResponse, responseData);
+                // console.log(uuid + " - " + JSON.stringify(jsonResponse) );
+
+                let jsonResponseFinal = formatJsonResponse(jsonResponse, responseData);
                 
 
                 if(typeof jsonResponse == "object" &&  jsonResponse.codigo === "01" )
                 {
                     jsonResponseFinal["files"] = [];
                     jsonResponseFinal.files[0] = await GetFile(page);
+                    
 
                     responseFinal.data = jsonResponseFinal;
                     responseFinal.status = "success";
@@ -183,7 +187,7 @@ async function ScrappCurpbyCurp(curp, response){
     
 }
 
-async function ScrappCurpbyData(clave_entidad, dia_nacimiento, mes_nacimiento, nombres, primer_apellido, segundo_apellido, anio_nacimiento, sexo, response){
+async function ScrappCurpbyData(clave_entidad, dia_nacimiento, mes_nacimiento, nombres, primer_apellido, segundo_apellido, anio_nacimiento, sexo, response, uuid){
 
     try{
 
@@ -222,7 +226,7 @@ async function ScrappCurpbyData(clave_entidad, dia_nacimiento, mes_nacimiento, n
                 const elementHandle = await page.$('.g-recaptcha > div > div > iframe')
                 const frame = await elementHandle.contentFrame()                
 
-                await wait(2 * 1000);
+                // await wait(2 * 1000);
 
                 let responseData = "";
 
@@ -269,9 +273,9 @@ async function ScrappCurpbyData(clave_entidad, dia_nacimiento, mes_nacimiento, n
                     response.url() === urlConsulta && response.status() === 200
                 );
 
-                jsonResponse = await finalResponseLocal.json();
+                let jsonResponse = await finalResponseLocal.json();
 
-                jsonResponseFinal = formatJsonResponse(jsonResponse, responseData);
+                let jsonResponseFinal = formatJsonResponse(jsonResponse, responseData);
 
                 if(typeof jsonResponse == "object" &&  jsonResponse.codigo === "01" )
                 {

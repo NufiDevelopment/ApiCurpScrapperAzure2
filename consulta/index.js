@@ -25,10 +25,10 @@ module.exports = async function (context, req) {
 
         if(response.code !== 0) body = response;
 
-        if(response.code === 0 && reqJson.tipo_busqueda == "curp") body = await scrapper.ObtenerCurp(reqJson.curp, response);
+        if(response.code === 0 && reqJson.tipo_busqueda == "curp") body = await scrapper.ObtenerCurp(reqJson.curp, response, uuid);
 
         if(response.code === 0 && reqJson.tipo_busqueda == "datos") body = await scrapper.ObtenerCurpByData(reqJson.clave_entidad, reqJson.dia_nacimiento, reqJson.mes_nacimiento,
-            reqJson.nombres, reqJson.primer_apellido, reqJson.segundo_apellido, reqJson.anio_nacimiento, reqJson.sexo, response);
+            reqJson.nombres, reqJson.primer_apellido, reqJson.segundo_apellido, reqJson.anio_nacimiento, reqJson.sexo, response, uuid);
 
     }
     catch(err){
